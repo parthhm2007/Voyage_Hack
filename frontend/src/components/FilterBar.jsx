@@ -16,23 +16,33 @@ export default function FilterBar({
     : items;
 
   return (
-    <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-6 flex flex-wrap items-center justify-between gap-4">
-      <div className="flex flex-wrap items-center gap-4 flex-1">
-        <div className="flex items-center space-x-2 text-gray-700 font-medium">
-          <Filter className="w-5 h-5 text-gray-400" />
+    <div className="filter-bar">
+      <div className="filter-controls-group">
+        <div className="filter-label-header">
+          <Filter size={18} />
           <span>Filters:</span>
         </div>
 
         {/* Destination Filter */}
-        <div className="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-2">
-          <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Destination</label>
+        <div className="filter-item">
+          <label htmlFor="destination-select" className="filter-item-label">Destination</label>
           <select
+            id="destination-select"
             value={selectedDestination || 'All'}
             onChange={(e) => {
-              setSelectedDestination(e.target.value);
-              setSelectedItemId(''); // Reset item when destination changes
+              const newDest = e.target.value;
+              setSelectedDestination(newDest);
+              // Auto-select the first item matching the new destination (F4)
+              const matchingItems = newDest && newDest !== 'All'
+                ? items.filter(item => item.destination === newDest)
+                : items;
+              if (matchingItems.length > 0) {
+                setSelectedItemId(matchingItems[0].item_id);
+              } else {
+                setSelectedItemId('');
+              }
             }}
-            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2"
+            className="filter-select"
           >
             <option value="All">All Destinations</option>
             {destinations.map((dest) => (
@@ -43,15 +53,15 @@ export default function FilterBar({
           </select>
         </div>
 
-        {/* Item Filter */}
-        <div className="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-2">
-          <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Item</label>
+        {/* Item Filter (F4: "All items" option removed as multi-item exceeds 10,000 limit) */}
+        <div className="filter-item">
+          <label htmlFor="item-select" className="filter-item-label">Item</label>
           <select
+            id="item-select"
             value={selectedItemId || ''}
             onChange={(e) => setSelectedItemId(e.target.value)}
-            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2 max-w-xs"
+            className="filter-select filter-select-wide"
           >
-            <option value="">All Items ({filteredItems.length})</option>
             {filteredItems.map((item) => (
               <option key={item.item_id} value={item.item_id}>
                 {item.item_name} ({item.item_id})
@@ -65,9 +75,10 @@ export default function FilterBar({
       <div>
         <button
           onClick={onReset}
-          className="inline-flex items-center space-x-1 px-3 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+          className="btn-reset"
+          type="button"
         >
-          <RotateCcw className="w-4 h-4" />
+          <RotateCcw size={16} />
           <span>Reset</span>
         </button>
       </div>
