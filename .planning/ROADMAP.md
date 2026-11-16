@@ -14,6 +14,10 @@
 **Goal:** Scaffold backend and frontend, load synthetic data (`inventory_items.csv`, `calendar_events.csv`, `daily_history.csv`), and build the Data Explorer UI with filters, summary cards, and bookings vs searches charts highlighting sold-out days.
 **Mode:** mvp
 **Requirements:** DATA-01, DATA-02
+**Plans:** 2 plans
+Plans:
+- [ ] 01-01-PLAN.md — FastAPI Backend & Synthetic Data Loader
+- [ ] 01-02-PLAN.md — React Frontend & Data Explorer UI
 **Success Criteria:**
 1. FastAPI backend successfully loads all 4 synthetic CSV datasets without modifying source files.
 2. React frontend displays Data Explorer with item and destination filters.
@@ -85,4 +89,4 @@
 2. Interface polished with clean layout, export capabilities, and robust error handling.
 
 ---
-*Last updated: 2026-11-16 after initialization*
+*Last updated: 2026-11-16 after planning Phase 1*
