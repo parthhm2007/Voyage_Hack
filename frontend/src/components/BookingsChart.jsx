@@ -8,72 +8,132 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
-  ReferenceDot
+  Legend
 } from 'recharts';
+
+/**
+ * Defensive pure function aggregating records by date when multiple item_ids are present.
+ * Sums bookings and searches; sold_out_flag is 1 if any record that day was sold out.
+ */
+export function aggregateHistoryByDate(records = []) {
+  if (!records || records.length === 0) return [];
+  const map = new Map();
+  for (const r of records) {
+    if (!map.has(r.date)) {
+      map.set(r.date, {
+        date: r.date,
+        searches: Number(r.searches) || 0,
+        bookings: Number(r.bookings) || 0,
+        sold_out_flag: Number(r.sold_out_flag) === 1 ? 1 : 0,
+      });
+    } else {
+      const entry = map.get(r.date);
+      entry.searches += Number(r.searches) || 0;
+      entry.bookings += Number(r.bookings) || 0;
+      if (Number(r.sold_out_flag) === 1) {
+        entry.sold_out_flag = 1;
+      }
+    }
+  }
+  return Array.from(map.values()).sort((a, b) => a.date.localeCompare(b.date));
+}
+
+// Custom dot renderer for sold-out days on the bookings line (F11: distinct colour, no text)
+const renderSoldOutDot = (props) => {
+  const { cx, cy, payload } = props;
+  if (payload && payload.sold_out_flag === 1 && cx != null && cy != null) {
+    return (
+      <circle
+        key={`soldout-dot-${payload.date}`}
+        cx={cx}
+        cy={cy}
+        r={5}
+        fill="#f43f5e"
+        stroke="#ffffff"
+        strokeWidth={2}
+      />
+    );
+  }
+  return null;
+};
+
+// Custom Tooltip showing "Sold out" alert on hover (F11)
+const CustomTooltip = ({ active, payload, label }) => {
+  if (active && payload && payload.length) {
+    const dataPoint = payload[0].payload;
+    const isSoldOut = dataPoint && dataPoint.sold_out_flag === 1;
+    return (
+      <div className="custom-chart-tooltip">
+        <div className="tooltip-date">Date: {label}</div>
+        {payload.map((entry, index) => (
+          <div key={`entry-${index}`} className="tooltip-row" style={{ color: entry.color }}>
+            <span>{entry.name}:</span>
+            <strong>{entry.value?.toLocaleString()}</strong>
+          </div>
+        ))}
+        {isSoldOut && (
+          <div className="tooltip-sold-out-alert">
+            Status: Sold out
+          </div>
+        )}
+      </div>
+    );
+  }
+  return null;
+};
 
 export default function BookingsChart({ data = [] }) {
   if (!data || data.length === 0) {
     return (
-      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col items-center justify-center h-80">
-        <p className="text-gray-500 font-medium">No historical data available for the selected filters.</p>
+      <div className="chart-empty">
+        <p>No historical data available for the selected filters.</p>
       </div>
     );
   }
 
-  // Filter out or identify sold-out days for ReferenceDot highlighting
-  const soldOutPoints = data.filter(item => item.sold_out_flag === 1);
+  // Ensure chart never receives more than one record per date (F4)
+  const uniqueItems = new Set(data.map(d => d.item_id).filter(Boolean));
+  const chartData = uniqueItems.size > 1 ? aggregateHistoryByDate(data) : data;
 
   return (
-    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 mb-6">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-gray-800">Bookings vs Searches Over Time</h3>
-        <div className="flex items-center space-x-4 text-xs font-medium">
-          <span className="flex items-center space-x-1">
-            <span className="w-3 h-3 bg-indigo-500 rounded-sm inline-block"></span>
-            <span className="text-gray-600">Searches</span>
+    <div className="chart-card">
+      <div className="chart-header">
+        <h3 className="chart-title">Bookings vs Searches Over Time</h3>
+        <div className="chart-legend">
+          <span className="legend-badge">
+            <span className="legend-square-searches"></span>
+            <span>Searches</span>
           </span>
-          <span className="flex items-center space-x-1">
-            <span className="w-3 h-3 bg-emerald-500 rounded-full inline-block"></span>
-            <span className="text-gray-600">Bookings</span>
+          <span className="legend-badge">
+            <span className="legend-circle-bookings"></span>
+            <span>Bookings</span>
           </span>
-          <span className="flex items-center space-x-1">
-            <span className="w-3 h-3 bg-rose-500 rounded-full inline-block"></span>
-            <span className="text-gray-600">Sold Out Day</span>
+          <span className="legend-badge">
+            <span className="legend-circle-soldout"></span>
+            <span>Sold Out Day</span>
           </span>
         </div>
       </div>
 
-      <div className="h-80 w-full">
+      <div className="chart-wrapper">
         <ResponsiveContainer width="100%" height="100%">
-          <ComposedChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+          <ComposedChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-            <XAxis dataKey="date" stroke="#9ca3af" fontSize={12} />
-            <YAxis yAxisId="left" stroke="#9ca3af" fontSize={12} />
-            <YAxis yAxisId="right" orientation="right" stroke="#9ca3af" fontSize={12} />
-            <Tooltip
-              contentStyle={{ backgroundColor: '#ffffff', borderColor: '#e5e7eb', borderRadius: '0.5rem', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-              formatter={(value, name) => [value, name === 'searches' ? 'Searches' : 'Bookings']}
-              labelFormatter={(label) => `Date: ${label}`}
-            />
+            <XAxis dataKey="date" stroke="#94a3b8" fontSize={12} />
+            <YAxis yAxisId="left" stroke="#94a3b8" fontSize={12} />
+            <YAxis yAxisId="right" orientation="right" stroke="#94a3b8" fontSize={12} />
+            <Tooltip content={<CustomTooltip />} />
             <Legend />
             <Bar yAxisId="left" dataKey="searches" name="Searches" fill="#6366f1" opacity={0.6} barSize={20} />
-            <Line yAxisId="right" type="monotone" dataKey="bookings" name="Bookings" stroke="#10b981" strokeWidth={2} dot={false} />
-            
-            {/* Highlight sold-out days */}
-            {soldOutPoints.map((point, index) => (
-              <ReferenceDot
-                key={`soldout-${index}`}
-                yAxisId="right"
-                x={point.date}
-                y={point.bookings}
-                r={6}
-                fill="#f43f5e"
-                stroke="#ffffff"
-                strokeWidth={2}
-                label={{ value: 'Sold Out', fill: '#f43f5e', position: 'top', fontSize: 10 }}
-              />
-            ))}
+            <Line
+              yAxisId="right"
+              type="monotone"
+              dataKey="bookings"
+              name="Bookings"
+              stroke="#10b981"
+              strokeWidth={2}
+              dot={renderSoldOutDot}
+            />
           </ComposedChart>
         </ResponsiveContainer>
       </div>

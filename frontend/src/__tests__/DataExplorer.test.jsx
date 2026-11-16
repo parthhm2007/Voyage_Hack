@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import SummaryCards from '../components/SummaryCards';
 import FilterBar from '../components/FilterBar';
-import BookingsChart from '../components/BookingsChart';
+import BookingsChart, { aggregateHistoryByDate } from '../components/BookingsChart';
 
 describe('Data Explorer Components', () => {
   test('SummaryCards renders metrics correctly', () => {
@@ -43,7 +43,7 @@ describe('Data Explorer Components', () => {
         items={items}
         selectedDestination="Paris"
         setSelectedDestination={setSelectedDestination}
-        selectedItemId=""
+        selectedItemId="ITM-001"
         setSelectedItemId={setSelectedItemId}
         onReset={onReset}
       />
@@ -70,5 +70,29 @@ describe('Data Explorer Components', () => {
     expect(screen.getByText('Searches')).toBeInTheDocument();
     expect(screen.getByText('Bookings')).toBeInTheDocument();
     expect(screen.getByText('Sold Out Day')).toBeInTheDocument();
+  });
+
+  test('aggregateHistoryByDate properly aggregates multi-item records by date', () => {
+    const rawMultiItemData = [
+      { date: '2026-01-01', item_id: 'ITM-001', searches: 100, bookings: 10, sold_out_flag: 0 },
+      { date: '2026-01-01', item_id: 'ITM-002', searches: 150, bookings: 20, sold_out_flag: 1 },
+      { date: '2026-01-02', item_id: 'ITM-001', searches: 80, bookings: 5, sold_out_flag: 0 },
+      { date: '2026-01-02', item_id: 'ITM-002', searches: 90, bookings: 15, sold_out_flag: 0 },
+    ];
+
+    const aggregated = aggregateHistoryByDate(rawMultiItemData);
+    expect(aggregated).toHaveLength(2);
+    expect(aggregated[0]).toEqual({
+      date: '2026-01-01',
+      searches: 250,
+      bookings: 30,
+      sold_out_flag: 1,
+    });
+    expect(aggregated[1]).toEqual({
+      date: '2026-01-02',
+      searches: 170,
+      bookings: 20,
+      sold_out_flag: 0,
+    });
   });
 });
