@@ -32,6 +32,12 @@ Plans:
 **Goal:** Build offline XGBoost training pipeline predicting P10/P50/P90 quantile demand on historical data with a time-based train/validation split, saving trained models.
 **Mode:** mvp
 **Requirements:** ML-01
+**Plans:** 0/2 plans complete
+Plans:
+
+- [ ] 02-01-PLAN.md — XGBoost Feature Engineering & Training Pipeline
+- [ ] 02-02-PLAN.md — Model Loader & Verification Tests
+
 **Success Criteria:**
 
 1. Training script successfully trains XGBoost P10, P50, and P90 quantile models using `daily_history.csv` features (excluding `true_demand`).
