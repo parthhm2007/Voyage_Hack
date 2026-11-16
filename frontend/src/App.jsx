@@ -14,6 +14,7 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [historyError, setHistoryError] = useState(null);
 
   // Load initial summary and items
   useEffect(() => {
@@ -26,6 +27,10 @@ export default function App() {
         ]);
         setSummary(summaryData);
         setItems(itemsData);
+        // Default load: select the first available item automatically (F4)
+        if (itemsData && itemsData.length > 0) {
+          setSelectedItemId(itemsData[0].item_id);
+        }
       } catch (err) {
         console.error('Failed to load initial data:', err);
         setError('Failed to connect to backend server. Please ensure FastAPI is running.');
@@ -36,51 +41,62 @@ export default function App() {
     loadInitialData();
   }, []);
 
+  // Function to load history data
+  const loadHistoryData = async () => {
+    try {
+      setHistoryLoading(true);
+      setHistoryError(null);
+      const params = {};
+      if (selectedDestination && selectedDestination !== 'All') {
+        params.destination = selectedDestination;
+      }
+      if (selectedItemId) {
+        params.item_id = selectedItemId;
+      }
+      params.limit = 500; // Limit for performance
+      const historyData = await fetchHistory(params);
+      setHistory(historyData);
+    } catch (err) {
+      console.error('Failed to load history data:', err);
+      // Visible history fetch error banner state (F10)
+      setHistoryError('Failed to load historical booking records from backend. Please check backend connection.');
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
+
   // Load history whenever filters change
   useEffect(() => {
-    const loadHistoryData = async () => {
-      try {
-        setHistoryLoading(true);
-        const params = {};
-        if (selectedDestination && selectedDestination !== 'All') {
-          params.destination = selectedDestination;
-        }
-        if (selectedItemId) {
-          params.item_id = selectedItemId;
-        }
-        params.limit = 500; // Limit for performance
-        const historyData = await fetchHistory(params);
-        setHistory(historyData);
-      } catch (err) {
-        console.error('Failed to load history data:', err);
-      } finally {
-        setHistoryLoading(false);
-      }
-    };
-    loadHistoryData();
+    if (selectedItemId || (selectedDestination && selectedDestination !== 'All')) {
+      loadHistoryData();
+    }
   }, [selectedDestination, selectedItemId]);
 
   const handleReset = () => {
     setSelectedDestination('All');
-    setSelectedItemId('');
+    if (items && items.length > 0) {
+      setSelectedItemId(items[0].item_id);
+    } else {
+      setSelectedItemId('');
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Navbar */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="bg-blue-600 p-2 rounded-xl text-white shadow-sm">
-              <Compass className="w-6 h-6" />
+    <div className="app-container">
+      {/* Navbar (F3: Responsive stack below 640px) */}
+      <header className="app-header">
+        <div className="header-content">
+          <div className="header-brand">
+            <div className="header-icon-badge">
+              <Compass size={24} />
             </div>
-            <div>
-              <h1 className="text-xl font-bold text-gray-900 tracking-tight">TBO Inventory Data Explorer</h1>
-              <p className="text-xs text-gray-500">Phase 1: Demand & Capacity Baseline</p>
+            <div className="header-title-group">
+              <h1>TBO Inventory Data Explorer</h1>
+              <p>Phase 1: Demand & Capacity Baseline</p>
             </div>
           </div>
-          <div className="flex items-center space-x-2">
-            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+          <div>
+            <span className="header-status-badge">
               Live Backend Connected
             </span>
           </div>
@@ -88,16 +104,17 @@ export default function App() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="app-main">
         {error ? (
-          <div className="bg-rose-50 border border-rose-200 text-rose-700 p-6 rounded-xl shadow-sm mb-6 flex items-center justify-between">
+          <div className="alert-banner">
             <div>
-              <h3 className="text-lg font-semibold">Connection Error</h3>
-              <p className="text-sm mt-1">{error}</p>
+              <h3 className="alert-title">Connection Error</h3>
+              <p className="alert-message">{error}</p>
             </div>
             <button
               onClick={() => window.location.reload()}
-              className="px-4 py-2 bg-rose-600 text-white text-sm font-medium rounded-lg hover:bg-rose-700 transition-colors"
+              className="alert-retry-btn"
+              type="button"
             >
               Retry
             </button>
@@ -118,54 +135,71 @@ export default function App() {
               onReset={handleReset}
             />
 
+            {/* History Fetch Error Banner with Retry (F10) */}
+            {historyError && (
+              <div className="alert-banner">
+                <div>
+                  <h3 className="alert-title">Data Loading Warning</h3>
+                  <p className="alert-message">{historyError}</p>
+                </div>
+                <button
+                  onClick={loadHistoryData}
+                  className="alert-retry-btn"
+                  type="button"
+                >
+                  Retry
+                </button>
+              </div>
+            )}
+
             {/* Charts & Visualizations */}
             {historyLoading ? (
-              <div className="bg-white p-12 rounded-xl shadow-sm border border-gray-100 flex items-center justify-center mb-6">
-                <RefreshCw className="w-6 h-6 animate-spin text-blue-600 mr-2" />
-                <span className="text-gray-600 font-medium">Loading history data...</span>
+              <div className="loading-box">
+                <RefreshCw size={24} className="spin-icon" />
+                <span>Loading history data...</span>
               </div>
             ) : (
               <BookingsChart data={history} />
             )}
 
             {/* Recent History Table Preview */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-              <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-800">Historical Records Overview</h3>
-                <span className="text-xs text-gray-500">Showing {history.length} records</span>
+            <div className="table-card">
+              <div className="table-header-bar">
+                <h3 className="table-title">Historical Records Overview</h3>
+                <span className="table-count-label">Showing {history.length} records</span>
               </div>
-              <div className="overflow-x-auto max-h-96">
-                <table className="w-full text-left border-collapse">
-                  <thead className="bg-gray-50 sticky top-0 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+              <div className="table-scroll">
+                <table className="data-table">
+                  <thead>
                     <tr>
-                      <th className="px-6 py-3">Date</th>
-                      <th className="px-6 py-3">Item ID</th>
-                      <th className="px-6 py-3">Searches</th>
-                      <th className="px-6 py-3">Bookings</th>
-                      <th className="px-6 py-3">Sold Out</th>
+                      <th>Date</th>
+                      <th>Item ID</th>
+                      <th>Searches</th>
+                      <th>Bookings</th>
+                      <th>Sold Out</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-100 text-sm text-gray-700">
+                  <tbody>
                     {history.slice(0, 50).map((row, idx) => (
-                      <tr key={idx} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-6 py-3 font-medium">{row.date}</td>
-                        <td className="px-6 py-3 font-mono text-xs text-gray-500">{row.item_id}</td>
-                        <td className="px-6 py-3">{row.searches}</td>
-                        <td className="px-6 py-3">{row.bookings}</td>
-                        <td className="px-6 py-3">
+                      <tr key={idx}>
+                        <td>{row.date}</td>
+                        <td className="code-cell">{row.item_id}</td>
+                        <td>{row.searches?.toLocaleString()}</td>
+                        <td>{row.bookings?.toLocaleString()}</td>
+                        <td>
                           {row.sold_out_flag === 1 ? (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-rose-100 text-rose-800">
+                            <span className="sold-out-badge">
                               Sold Out
                             </span>
                           ) : (
-                            <span className="text-gray-400">-</span>
+                            <span className="empty-cell">-</span>
                           )}
                         </td>
                       </tr>
                     ))}
                     {history.length === 0 && (
                       <tr>
-                        <td colSpan="5" className="px-6 py-8 text-center text-gray-400">
+                        <td colSpan="5" className="table-empty-message">
                           No records found.
                         </td>
                       </tr>
