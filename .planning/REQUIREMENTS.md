@@ -10,7 +10,7 @@
 ### Machine Learning & Forecasting
 
 - [ ] **ML-01**: XGBoost offline training pipeline predicting P10/P50/P90 quantile demand using time-based train/validation split, saving models to file.
-- [ ] **API-01**: Forecast API serving 90-day future predictions (`future_window.csv`) with P10/P50/P90 confidence bands per item.
+- [x] **API-01**: Forecast API serving 90-day future predictions (`future_window.csv`) with P10/P50/P90 confidence bands per item.
 
 ### Optimization & Decision Support
 

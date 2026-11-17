@@ -49,10 +49,11 @@ Plans:
 **Goal:** Implement forecast endpoint and UI chart serving 90-day future predictions (`future_window.csv`) with P10/P50/P90 confidence bands per item.
 **Mode:** mvp
 **Requirements:** API-01
-**Success Criteria:**
+**Plans:** 2/2 plans complete
+Plans:
 
-1. Backend API endpoint returns 90-day demand forecasts with confidence intervals for any item.
-2. Frontend renders interactive forecast charts with confidence bands for selected items.
+- [x] 03-01-PLAN.md — Backend Forecast API Endpoint
+- [x] 03-02-PLAN.md — Frontend Forecast Chart Component
 
 ### Phase 4: Newsvendor Calculator
 
@@ -115,4 +116,4 @@ Plans:
 2. Interface polished with clean layout, export capabilities, and robust error handling.
 
 ---
-*Last updated: 2026-11-16 after planning Phase 1*
+*Last updated: 2026-03-31 after Phase 3 completion*
