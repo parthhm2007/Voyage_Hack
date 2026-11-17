@@ -9,7 +9,7 @@ if str(BASE_DIR) not in sys.path:
     sys.path.insert(0, str(BASE_DIR))
 
 from backend.loader import store
-from backend.routers import data, forecast, newsvendor
+from backend.routers import data, forecast, newsvendor, optimize
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -36,6 +36,7 @@ app.add_middleware(
 app.include_router(data.router)
 app.include_router(forecast.router)
 app.include_router(newsvendor.router)
+app.include_router(optimize.router)
 
 @app.get("/health")
 def health_check():

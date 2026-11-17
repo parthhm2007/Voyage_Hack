@@ -75,16 +75,28 @@ Plans:
 **Goal:** Implement budget allocation engine and UI to distribute a total budget across items by marginal expected profit per rupee.
 **Mode:** mvp
 **Requirements:** OPT-02
+**Status:** Completed
+**Plans:** 2/2 plans complete
+Plans:
+- [x] 05-01-PLAN.md — Backend Budget Optimization API
+- [x] 05-02-PLAN.md — Frontend Budget Optimizer Component
+
 **Success Criteria:**
 
-1. Optimizer allocates budget across items iteratively based on marginal ROI per rupee.
-2. Backend optimization endpoint executes efficiently and returns optimal allocation arrays.
+1. Backend budget optimization endpoint correctly distributes total budget across items using marginal expected profit per rupee (ROI).
+2. Interactive BudgetOptimizer component allows users to adjust total budget and inspect real-time item allocations, expected profit, and portfolio ROI.
 
 ### Phase 6: Recommendations Table
 
 **Goal:** Build recommendations table UI with interactive budget input and risk-appetite slider connecting forecast and budget optimizer.
 **Mode:** mvp
 **Requirements:** UI-01
+**Status:** Completed
+**Plans:** 2/2 plans complete
+Plans:
+- [x] 06-01-PLAN.md — Backend Optimization Risk Appetite Weighting
+- [x] 06-02-PLAN.md — Frontend Recommendations Table Component
+
 **Success Criteria:**
 
 1. Recommendations table displays item-level buy recommendations, expected revenue, and cost.

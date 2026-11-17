@@ -606,6 +606,55 @@ html, body {
   color: #94a3b8;
 }
 
+.preset-buttons-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+}
+
+.preset-btn {
+  padding: 0.4rem 0.5rem;
+  background-color: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #334155;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.preset-btn:hover {
+  background-color: #f1f5f9;
+  border-color: #94a3b8;
+}
+
+.preset-btn.active {
+  background-color: #4f46e5;
+  color: #ffffff;
+  border-color: #4f46e5;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.badge.hotel {
+  background-color: #e0e7ff;
+  color: #3730a3;
+}
+
+.badge.flight {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
 /* Newsvendor Calculator Component Styles */
 .calculator-card {
   background-color: #ffffff;

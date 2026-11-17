@@ -5,6 +5,8 @@ import FilterBar from './components/FilterBar';
 import BookingsChart from './components/BookingsChart';
 import ForecastChart from './components/ForecastChart';
 import NewsvendorCalculator from './components/NewsvendorCalculator';
+import BudgetOptimizer from './components/BudgetOptimizer';
+import RecommendationsTable from './components/RecommendationsTable';
 import { Compass, RefreshCw } from 'lucide-react';
 
 export default function App() {
@@ -212,6 +214,12 @@ export default function App() {
 
             {/* Newsvendor Inventory Optimization Calculator */}
             <NewsvendorCalculator itemId={selectedItemId} itemObj={selectedItemObj} />
+
+            {/* Portfolio Budget Optimizer */}
+            <BudgetOptimizer />
+
+            {/* Portfolio Recommendations Table */}
+            <RecommendationsTable />
 
             {/* Historical Bookings vs Searches Chart */}
             {historyLoading ? (
