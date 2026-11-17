@@ -1,8 +1,9 @@
 from fastapi import APIRouter, Query, HTTPException
 from typing import List, Dict, Any
+import numpy as np
 import pandas as pd
 from backend.loader import store
-from backend.model_loader import model_store
+from backend.model_loader import model_store, clamp_and_sort_quantiles
 
 router = APIRouter(prefix="/api", tags=["forecast"])
 
@@ -29,11 +30,35 @@ def get_forecast(
         raise HTTPException(status_code=500, detail=f"Prediction error: {str(e)}")
         
     result_df = item_df.copy()
-    result_df["p10"] = preds["p10"].values
-    result_df["p50"] = preds["p50"].values
-    result_df["p90"] = preds["p90"].values
+    
+    clamped_p10 = []
+    clamped_p50 = []
+    clamped_p90 = []
+    for idx in range(len(preds)):
+        r10 = float(preds.loc[idx, "p10"])
+        r50 = float(preds.loc[idx, "p50"])
+        r90 = float(preds.loc[idx, "p90"])
+        c10, c50, c90 = clamp_and_sort_quantiles(r10, r50, r90)
+        clamped_p10.append(c10)
+        clamped_p50.append(c50)
+        clamped_p90.append(c90)
+
+    result_df["p10"] = clamped_p10
+    result_df["p50"] = clamped_p50
+    result_df["p90"] = clamped_p90
     
     if "true_demand" in result_df.columns:
         result_df = result_df.drop(columns=["true_demand"])
         
-    return result_df.to_dict(orient="records")
+    records = result_df.to_dict(orient="records")
+    clean_records = []
+    for r in records:
+        clean_r = {}
+        for k, v in r.items():
+            if pd.isna(v):
+                clean_r[k] = None
+            else:
+                clean_r[k] = v
+        clean_records.append(clean_r)
+
+    return clean_records

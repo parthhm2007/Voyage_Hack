@@ -133,6 +133,7 @@ export default function BookingsChart({ data = [] }) {
               stroke="#10b981"
               strokeWidth={2}
               dot={renderSoldOutDot}
+              connectNulls={false}
             />
           </ComposedChart>
         </ResponsiveContainer>

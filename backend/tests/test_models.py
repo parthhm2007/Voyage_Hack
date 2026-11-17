@@ -61,10 +61,10 @@ def test_true_demand_exclusion():
     model_store.load_models()
     assert 'true_demand' not in model_store.feature_cols
 
-    # Check train_models.py source code text doesn't use true_demand as feature
+    # Check train_models.py source code text doesn't read store.history
     train_script_path = BASE_DIR / "backend" / "train_models.py"
     content = train_script_path.read_text()
-    assert "true_demand" not in content or "drop(columns=['true_demand']" in content or "drop(columns=['true_demand']" in content or "true_demand" in content # wait, let's make sure true_demand is only loaded from raw csv and dropped/excluded from features
-    # More precisely, verify true_demand is not in feature_cols
+    assert "true_demand" not in model_store.feature_cols
+    assert "store.history" not in content, "train_models.py must not read store.history"
     for col in model_store.feature_cols:
         assert col != 'true_demand'

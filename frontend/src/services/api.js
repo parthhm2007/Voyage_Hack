@@ -32,4 +32,9 @@ export const getForecast = async (itemId) => {
   return response.data;
 };
 
+export const getNewsvendor = async (itemId, params = {}) => {
+  const response = await api.get('/api/newsvendor', { params: { item_id: itemId, ...params } });
+  return response.data;
+};
+
 export default api;

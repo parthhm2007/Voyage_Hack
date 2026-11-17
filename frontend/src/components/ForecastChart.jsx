@@ -7,8 +7,7 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
-  Tooltip,
-  Legend
+  Tooltip
 } from 'recharts';
 
 const CustomTooltip = ({ active, payload, label }) => {
@@ -24,15 +23,15 @@ const CustomTooltip = ({ active, payload, label }) => {
         )}
         <div className="tooltip-row" style={{ color: '#6366f1' }}>
           <span>P50 Forecast:</span>
-          <strong>{Number(dataPoint.p50)?.toFixed(1)}</strong>
+          <strong>{dataPoint.p50 != null ? Number(dataPoint.p50)?.toFixed(1) : '-'}</strong>
         </div>
         <div className="tooltip-row" style={{ color: '#3b82f6' }}>
           <span>P10 (Low):</span>
-          <strong>{Number(dataPoint.p10)?.toFixed(1)}</strong>
+          <strong>{dataPoint.p10 != null ? Number(dataPoint.p10)?.toFixed(1) : '-'}</strong>
         </div>
         <div className="tooltip-row" style={{ color: '#1d4ed8' }}>
           <span>P90 (High):</span>
-          <strong>{Number(dataPoint.p90)?.toFixed(1)}</strong>
+          <strong>{dataPoint.p90 != null ? Number(dataPoint.p90)?.toFixed(1) : '-'}</strong>
         </div>
       </div>
     );
@@ -49,13 +48,17 @@ export default function ForecastChart({ data = [], selectedItemName = '' }) {
     );
   }
 
-  // Transform data to ensure confidence range format [p10, p90] for Recharts Area
+  // Transform data keeping null values as null so they are never plotted as zero
   const chartData = data.map(d => ({
     ...d,
-    confidenceRange: [Number(d.p10) || 0, Number(d.p90) || 0],
-    p50: Number(d.p50) || 0,
-    p10: Number(d.p10) || 0,
-    p90: Number(d.p90) || 0,
+    confidenceRange: (d.p10 != null && d.p90 != null)
+      ? [Number(d.p10), Number(d.p90)]
+      : null,
+    p50: d.p50 != null ? Number(d.p50) : null,
+    p10: d.p10 != null ? Number(d.p10) : null,
+    p90: d.p90 != null ? Number(d.p90) : null,
+    bookings: d.bookings != null ? Number(d.bookings) : null,
+    searches: d.searches != null ? Number(d.searches) : null,
   }));
 
   return (
@@ -83,7 +86,6 @@ export default function ForecastChart({ data = [], selectedItemName = '' }) {
             <XAxis dataKey="date" stroke="#94a3b8" fontSize={12} />
             <YAxis stroke="#94a3b8" fontSize={12} />
             <Tooltip content={<CustomTooltip />} />
-            <Legend />
             <Area
               type="monotone"
               dataKey="confidenceRange"
@@ -92,6 +94,7 @@ export default function ForecastChart({ data = [], selectedItemName = '' }) {
               fillOpacity={0.3}
               stroke="#60a5fa"
               strokeWidth={1}
+              connectNulls={false}
             />
             <Line
               type="monotone"
@@ -100,6 +103,7 @@ export default function ForecastChart({ data = [], selectedItemName = '' }) {
               stroke="#6366f1"
               strokeWidth={2}
               dot={false}
+              connectNulls={false}
             />
           </ComposedChart>
         </ResponsiveContainer>

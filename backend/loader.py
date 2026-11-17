@@ -34,8 +34,32 @@ class DataStore:
             hist = self.history.copy()
             hist['date'] = pd.to_datetime(hist['date'])
             cols = ['date', 'item_id', 'bookings', 'searches', 'sell_price', 'supplier_cost', 'lead_days']
-            hist_sub = hist[[c for c in cols if c in hist.columns]]
-            fut_sub = raw_future[[c for c in cols if c in raw_future.columns]]
+            hist_sub = hist[[c for c in cols if c in hist.columns]].copy()
+            fut_sub = raw_future[[c for c in cols if c in raw_future.columns]].copy()
+            
+            # Lag and rolling feature calculation for future window:
+            # Future dates lack recorded bookings and searches. To avoid NaNs from day 8 onward,
+            # we fill bookings and searches in fut_sub using the per-item day-of-week average
+            # of the most recent 8 weeks of history. The lag-7 and rolling-mean-7 features are
+            # then computed from this filled series. We never touch or read true_demand.
+            # Real nulls in raw_future remain intact for response output.
+            cutoff_date = hist['date'].max() - pd.Timedelta(weeks=8)
+            recent_hist = hist[hist['date'] >= cutoff_date].copy()
+            recent_hist['day_of_week'] = recent_hist['date'].dt.day_of_week
+            dow_profile = (
+                recent_hist.groupby(['item_id', 'day_of_week'])[['bookings', 'searches']]
+                .mean()
+                .reset_index()
+            )
+            dow_profile = dow_profile.rename(
+                columns={'bookings': 'fill_bookings', 'searches': 'fill_searches'}
+            )
+            
+            fut_sub['day_of_week'] = fut_sub['date'].dt.day_of_week
+            fut_sub = fut_sub.merge(dow_profile, on=['item_id', 'day_of_week'], how='left')
+            fut_sub['bookings'] = fut_sub['bookings'].fillna(fut_sub['fill_bookings'])
+            fut_sub['searches'] = fut_sub['searches'].fillna(fut_sub['fill_searches'])
+            fut_sub = fut_sub.drop(columns=['day_of_week', 'fill_bookings', 'fill_searches'], errors='ignore')
             
             combined = pd.concat([hist_sub, fut_sub], ignore_index=True)
             combined = combined.sort_values(['item_id', 'date']).reset_index(drop=True)

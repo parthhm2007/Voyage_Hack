@@ -4,6 +4,7 @@ import SummaryCards from './components/SummaryCards';
 import FilterBar from './components/FilterBar';
 import BookingsChart from './components/BookingsChart';
 import ForecastChart from './components/ForecastChart';
+import NewsvendorCalculator from './components/NewsvendorCalculator';
 import { Compass, RefreshCw } from 'lucide-react';
 
 export default function App() {
@@ -121,8 +122,8 @@ export default function App() {
               <Compass size={24} />
             </div>
             <div className="header-title-group">
-              <h1>TBO Inventory Data Explorer & Forecast</h1>
-              <p>Phase 3: XGBoost Demand Forecasting & Confidence Bands</p>
+              <h1>TBO Inventory Optimizer</h1>
+              <p>Demand Forecasting & Newsvendor Inventory Optimization</p>
             </div>
           </div>
           <div>
@@ -208,6 +209,9 @@ export default function App() {
             ) : (
               <ForecastChart data={forecast} selectedItemName={selectedItemName} />
             )}
+
+            {/* Newsvendor Inventory Optimization Calculator */}
+            <NewsvendorCalculator itemId={selectedItemId} itemObj={selectedItemObj} />
 
             {/* Historical Bookings vs Searches Chart */}
             {historyLoading ? (

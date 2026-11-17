@@ -65,4 +65,16 @@ class ModelStore:
         })
         return res
 
+def clamp_and_sort_quantiles(p10: float, p50: float, p90: float) -> tuple[float, float, float]:
+    """
+    Ensure quantile predictions are non-negative and properly ordered:
+    1. Clamps each quantile at >= 0.0.
+    2. Sorts so that p10 <= p50 <= p90.
+    """
+    c10 = max(0.0, float(p10))
+    c50 = max(0.0, float(p50))
+    c90 = max(0.0, float(p90))
+    s10, s50, s90 = sorted([c10, c50, c90])
+    return s10, s50, s90
+
 model_store = ModelStore()

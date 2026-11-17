@@ -62,8 +62,8 @@ Plans:
 **Requirements:** OPT-01
 **Plans:** 2 plans
 Plans:
-- [ ] 04-01-PLAN.md — Backend Newsvendor Optimization API
-- [ ] 04-02-PLAN.md — Frontend Newsvendor Calculator Component
+- [x] 04-01-PLAN.md — Backend Newsvendor Optimization API
+- [x] 04-02-PLAN.md — Frontend Newsvendor Calculator Component
 
 **Success Criteria:**
 
