@@ -37,10 +37,14 @@ export const getNewsvendor = async (itemId, params = {}) => {
   return response.data;
 };
 
-export const getOptimization = async (totalBudget, riskAppetite = 0.5, params = {}) => {
-  const response = await api.get('/api/optimize', { 
-    params: { total_budget: totalBudget, risk_appetite: riskAppetite, ...params } 
-  });
+export const getOptimization = async (totalBudget, riskAppetite = 0.5, params = {}, signal = null) => {
+  const config = {
+    params: { total_budget: totalBudget, risk_appetite: riskAppetite, ...params }
+  };
+  if (signal) {
+    config.signal = signal;
+  }
+  const response = await api.get('/api/optimize', config);
   return response.data;
 };
 

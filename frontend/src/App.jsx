@@ -215,9 +215,6 @@ export default function App() {
             {/* Newsvendor Inventory Optimization Calculator */}
             <NewsvendorCalculator itemId={selectedItemId} itemObj={selectedItemObj} />
 
-            {/* Portfolio Budget Optimizer */}
-            <BudgetOptimizer />
-
             {/* Portfolio Recommendations Table */}
             <RecommendationsTable />
 

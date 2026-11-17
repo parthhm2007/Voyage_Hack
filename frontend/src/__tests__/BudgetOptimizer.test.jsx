@@ -8,7 +8,11 @@ vi.mock('../services/api', () => ({
 }));
 
 describe('BudgetOptimizer Component', () => {
-  test('renders BudgetOptimizer and displays optimization allocations on load', async () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  test('renders BudgetOptimizer and displays optimization allocations in rupees (₹) on load', async () => {
     api.getOptimization.mockResolvedValueOnce({
       total_budget: 500000.0,
       allocated_budget: 485000.0,
@@ -21,7 +25,7 @@ describe('BudgetOptimizer Component', () => {
           item_type: 'hotel',
           destination: 'Goa',
           allocated_budget: 120000.0,
-          units_purchased: 75.0,
+          units_purchased: 75,
           expected_profit: 45000.0,
           roi: 0.375
         }
@@ -31,11 +35,13 @@ describe('BudgetOptimizer Component', () => {
     render(<BudgetOptimizer />);
 
     expect(screen.getByText(/Portfolio Budget Optimizer/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/Total Capital Budget/i)).toHaveValue(500000);
+    expect(screen.getByLabelText(/Total Capital Budget \(₹\)/i)).toHaveValue(500000);
 
     await waitFor(() => {
       expect(screen.getByText('Azure Coast Budget Inn')).toBeInTheDocument();
       expect(screen.getByText(/Expected Portfolio Profit/i)).toBeInTheDocument();
+      expect(screen.getByText('₹4,85,000')).toBeInTheDocument();
+      expect(screen.getByText('₹1,50,000')).toBeInTheDocument();
     });
   });
 });
