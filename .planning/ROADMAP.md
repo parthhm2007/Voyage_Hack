@@ -49,7 +49,7 @@ Plans:
 **Goal:** Implement forecast endpoint and UI chart serving 90-day future predictions (`future_window.csv`) with P10/P50/P90 confidence bands per item.
 **Mode:** mvp
 **Requirements:** API-01
-**Plans:** 2/2 plans complete
+**Plans:** 1/2 plans complete
 Plans:
 
 - [x] 03-01-PLAN.md — Backend Forecast API Endpoint
