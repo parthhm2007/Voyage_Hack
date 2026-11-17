@@ -60,6 +60,11 @@ Plans:
 **Goal:** Implement newsvendor optimization logic and calculator component to determine optimal buy quantity per item from cost, price, salvage value, and forecast distribution.
 **Mode:** mvp
 **Requirements:** OPT-01
+**Plans:** 2 plans
+Plans:
+- [ ] 04-01-PLAN.md — Backend Newsvendor Optimization API
+- [ ] 04-02-PLAN.md — Frontend Newsvendor Calculator Component
+
 **Success Criteria:**
 
 1. Newsvendor calculation correctly balances overage and underage costs using demand quantiles.
