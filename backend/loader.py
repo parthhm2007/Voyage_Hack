@@ -14,15 +14,57 @@ class DataStore:
         self.items: pd.DataFrame | None = None
         self.calendar: pd.DataFrame | None = None
         self.history: pd.DataFrame | None = None
+        self.future_window: pd.DataFrame | None = None
 
     def load(self):
         items_path = self.data_dir / "inventory_items.csv"
         calendar_path = self.data_dir / "calendar_events.csv"
         history_path = self.data_dir / "daily_history.csv"
+        future_path = self.data_dir / "future_window.csv"
 
         self.items = pd.read_csv(items_path)
         self.calendar = pd.read_csv(calendar_path)
         raw_history = pd.read_csv(history_path)
         self.history = raw_history.drop(columns=["true_demand"], errors="ignore")
+        
+        raw_future = pd.read_csv(future_path)
+        raw_future['date'] = pd.to_datetime(raw_future['date'])
+        
+        if self.history is not None:
+            hist = self.history.copy()
+            hist['date'] = pd.to_datetime(hist['date'])
+            cols = ['date', 'item_id', 'bookings', 'searches', 'sell_price', 'supplier_cost', 'lead_days']
+            hist_sub = hist[[c for c in cols if c in hist.columns]]
+            fut_sub = raw_future[[c for c in cols if c in raw_future.columns]]
+            
+            combined = pd.concat([hist_sub, fut_sub], ignore_index=True)
+            combined = combined.sort_values(['item_id', 'date']).reset_index(drop=True)
+            
+            combined['day_of_week'] = combined['date'].dt.day_of_week
+            combined['month'] = combined['date'].dt.month
+            combined['day_of_month'] = combined['date'].dt.day
+            combined['is_weekend'] = combined['day_of_week'].isin([5, 6]).astype(int)
+            combined['margin'] = combined['sell_price'] - combined['supplier_cost']
+            
+            for col in ['bookings', 'searches']:
+                if col in combined.columns:
+                    combined[f'{col}_lag_7'] = combined.groupby('item_id')[col].shift(7)
+                    combined[f'{col}_roll_mean_7'] = combined.groupby('item_id')[col].transform(lambda x: x.shift(1).rolling(7, min_periods=1).mean())
+            
+            min_fut_date = raw_future['date'].min()
+            future_feat = combined[combined['date'] >= min_fut_date].copy()
+            future_feat['date'] = future_feat['date'].dt.strftime('%Y-%m-%d')
+            raw_future['date'] = raw_future['date'].dt.strftime('%Y-%m-%d')
+            
+            lag_roll_cols = ['day_of_week', 'month', 'day_of_month', 'is_weekend', 'margin', 'bookings_lag_7', 'searches_lag_7', 'bookings_roll_mean_7', 'searches_roll_mean_7']
+            
+            self.future_window = raw_future.merge(
+                future_feat[['date', 'item_id'] + [c for c in lag_roll_cols if c in future_feat.columns]],
+                on=['date', 'item_id'],
+                how='left'
+            )
+        else:
+            raw_future['date'] = raw_future['date'].dt.strftime('%Y-%m-%d')
+            self.future_window = raw_future
 
 store = DataStore()
