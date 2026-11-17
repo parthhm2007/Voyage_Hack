@@ -27,4 +27,9 @@ export const fetchHistory = async (params = {}) => {
   return response.data;
 };
 
+export const getForecast = async (itemId) => {
+  const response = await api.get('/api/forecast', { params: { item_id: itemId } });
+  return response.data;
+};
+
 export default api;
