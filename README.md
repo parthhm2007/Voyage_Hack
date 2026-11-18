@@ -66,7 +66,7 @@ Voyage_Hack-main/
 
 Install the following before running the project:
 
-- Python **3.11** (recommended)
+- Python **3.14** (recommended)
 - Node.js and npm
 - Git (optional, for cloning the repository)
 
